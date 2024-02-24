@@ -28,4 +28,5 @@ model Barang {
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
   harga String
+  gambar String?
 }

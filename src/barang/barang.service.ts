@@ -1,4 +1,9 @@
-import { Body, ForbiddenException, Injectable } from '@nestjs/common';
+import {
+  Body,
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { BarangDto } from './dto/barang.dto';
 import {
@@ -16,12 +21,13 @@ export class BarangService {
     return barang;
   }
 
-  async create(dto: BarangDto) {
+  async create(dto: BarangDto, img: Express.Multer.File) {
     try {
       const barang = await this.prisma.barang.create({
         data: {
           nama_barang: dto.nama_barang,
           harga: dto.harga,
+          gambar: img.path,
         },
       });
 
@@ -40,7 +46,11 @@ export class BarangService {
       },
     });
 
-    return barang;
+    if (barang) {
+      return barang;
+    } else {
+      throw new NotFoundException('Credentials not found');
+    }
   }
 
   async update(id: number, dto: BarangDto) {
@@ -73,6 +83,8 @@ export class BarangService {
       return {
         msg: 'Data berhasil dihapus',
       };
+    } else {
+      throw new NotFoundException('Credentials not found');
     }
   }
 }

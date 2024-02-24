@@ -6,9 +6,14 @@ import {
   Param,
   Post,
   Put,
+  UploadedFile,
+  UseInterceptors,
 } from '@nestjs/common';
 import { BarangService } from './barang.service';
 import { BarangDto } from './dto/barang.dto';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { diskStorage } from 'multer';
+import { extname } from 'path';
 
 @Controller('barang')
 export class BarangController {
@@ -19,8 +24,21 @@ export class BarangController {
   }
 
   @Post()
-  Store(@Body() dto: BarangDto) {
-    return this.BarangService.create(dto);
+  @UseInterceptors(
+    FileInterceptor('gambar', {
+      storage: diskStorage({
+        destination: './image',
+        filename: (req, file, callback) => {
+          const unique = Date.now() + '-' + Math.round(Math.random());
+          const ext = extname(file.originalname);
+          const filename = `${file.originalname}-${unique}-${ext}`;
+          callback(null, filename);
+        },
+      }),
+    }),
+  )
+  Store(@Body() dto: BarangDto, @UploadedFile() img: Express.Multer.File) {
+    return this.BarangService.create(dto, img);
   }
 
   @Get(':id')
